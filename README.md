@@ -1,0 +1,14 @@
+# be-lab
+实验室管理系统后端
+
+## 环境变量
+- GIN_MODE
+- GO_RUN_LOG
+- SERVER_HOST
+- SERVER_PORT
+- MYSQL_HOST
+- MYSQL_PORT
+- MYSQL_USER
+- MYSQL_PWD
+- MYSQL_DB
+- MYSQL_TIMEOUT
