@@ -24,8 +24,10 @@ func (p *Page) Limit() int {
 
 type ListReq struct {
 	Page
-	Status int32 `form:"status"`
-	Type   int32 `form:"type"`
+	Status   int32 `form:"status"`
+	Type     int32 `form:"type"`
+	Uid      int32 `form:"uid"`
+	DeviceId int32 `form:"device_id"`
 }
 
 func (p *ListReq) Where() map[string]any {

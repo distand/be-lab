@@ -20,12 +20,8 @@ func (s *Service) BookingList(c *gin.Context, p *req.ListReq) *vo.Page {
 		rsp = &vo.Page{
 			List: make([]*vo.Booking, 0),
 		}
-		uid      = utils.Uid(c)
-		nickname = s.nickname(uid)
 	)
-	where := p.Where()
-	where["uid"] = uid
-	list, cnt, err := s.Dal.BookingList(c, where, &p.Page)
+	list, cnt, err := s.Dal.BookingList(c, p.Where(), &p.Page)
 	if err != nil || cnt == 0 {
 		return rsp
 	}
@@ -38,7 +34,7 @@ func (s *Service) BookingList(c *gin.Context, p *req.ListReq) *vo.Page {
 	}
 	names := s.deviceNames(c, ids)
 	for _, v := range list {
-		res = append(res, v.ToVO(nickname, names[v.DeviceID]))
+		res = append(res, v.ToVO(s.nickname(v.Uid), names[v.DeviceID]))
 	}
 	rsp.List = res
 	rsp.Total = cnt
