@@ -32,11 +32,17 @@ type ListReq struct {
 
 func (p *ListReq) Where() map[string]any {
 	mp := make(map[string]any)
+	if p.Uid > 0 {
+		mp["uid"] = p.Uid
+	}
 	if p.Status > 0 {
 		mp["status"] = p.Status
 	}
 	if p.Type > 0 {
 		mp["type"] = p.Type
+	}
+	if p.DeviceId > 0 {
+		mp["device_id"] = p.DeviceId
 	}
 	return mp
 }
