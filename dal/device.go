@@ -9,6 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
+func (d *Dal) DeviceType(c context.Context) (res []do.DeviceType, err error) {
+	err = d.DB.WithContext(c).Model(&do.DeviceType{}).
+		Find(&res).Error
+	return
+}
+
 func (d *Dal) Device(c context.Context, id int32) (res *do.Device, err error) {
 	res = &do.Device{}
 	err = d.DB.WithContext(c).

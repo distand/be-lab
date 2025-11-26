@@ -2,11 +2,17 @@ package service
 
 import (
 	"be-lab/common"
+	"be-lab/model/do"
 	"be-lab/model/req"
 	"be-lab/model/vo"
 	"github.com/gin-gonic/gin"
 	"time"
 )
+
+func (s *Service) DeviceType(c *gin.Context) []do.DeviceType {
+	list, _ := s.Dal.DeviceType(c)
+	return list
+}
 
 func (s *Service) DeviceList(c *gin.Context, p *req.ListReq) *vo.Page {
 	rsp := &vo.Page{}

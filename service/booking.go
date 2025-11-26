@@ -9,7 +9,9 @@ import (
 	"be-lab/model/vo"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"slices"
 	"time"
 )
 
@@ -44,19 +46,8 @@ func (s *Service) BookingList(c *gin.Context, p *req.ListReq) *vo.Page {
 }
 
 func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
-	if p.Stime >= p.Etime || p.DeviceID == 0 || p.Stime < time.Now().Unix() {
-		return errors.New(code.ParamErr)
-	}
-	device, err := s.Dal.Device(c, p.DeviceID)
-	if err != nil || device == nil || device.Status == common.StatusInactive {
-		return errors.New("仪器不可用")
-	}
-	rule := device.ToVO().Rule
-	if rule.MaxOnce > 0 && p.Etime-p.Stime > rule.MaxOnce*common.Hour {
-		return errors.New("单次预约时间超过限制")
-	}
-	if device.Status == common.StatusUsing || s.isConflict(c, p) {
-		return errors.New("预约时间与他人冲突")
+	if err := s.checkBooking(c, p); err != nil {
+		return err
 	}
 	if p.ID > 0 {
 		d, err := s.Dal.Booking(c, p.ID)
@@ -67,28 +58,55 @@ func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
 		if d.Uid != utils.Uid(c) || d.Status == common.StatusInactive {
 			return errors.New(code.Forbidden)
 		}
-		return s.Dal.BookingSave(c, p.BuildDo(d).SetUser(utils.Uid(c)))
+		return s.Dal.BookingSave(c, p.BuildDo(utils.Uid(c), d))
 	}
-	return s.Dal.BookingAdd(c, p.BuildDo(nil).SetUser(utils.Uid(c)))
+	return s.Dal.BookingAdd(c, p.BuildDo(utils.Uid(c), nil))
 }
 
-func (s *Service) isConflict(c *gin.Context, p *req.BookingSave) bool {
+func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
+	if p.Stime >= p.Etime || p.DeviceID == 0 || p.Stime < time.Now().Unix() {
+		return errors.New(code.ParamErr)
+	}
+	device, err := s.Dal.Device(c, p.DeviceID)
+	if err != nil || device == nil || device.Status == common.StatusInactive {
+		return errors.New("仪器不可用")
+	}
+	rule := device.ToVO().Rule
+	if rule.MaxOnce > 0 && p.Etime-p.Stime > rule.MaxOnce {
+		return errors.New("超过单次最大时间限制")
+	}
+	for _, field := range rule.RequireFields {
+		if !slices.Contains(common.BookingFields, field) {
+			return errors.New("不支持的参数：" + field)
+		}
+		if v, ok := p.Ext[field]; !ok || v == "" {
+			return errors.New("缺少必填参数：" + field)
+		}
+	}
 	res, err := s.Dal.BookingByDevices(c, []int32{p.DeviceID})
 	if err != nil {
-		return true
+		return errors.New(code.SysErr)
 	}
 	if len(res) == 0 {
-		return false
+		return nil
 	}
+	var selfCnt int64
+	uid := utils.Uid(c)
 	for _, b := range res {
+		if b.Uid == uid {
+			selfCnt++
+		}
 		if b.ID == p.ID {
 			continue
 		}
 		if p.Stime < b.Etime.Unix() && p.Etime > b.Stime.Unix() {
-			return true
+			return errors.New("预约时间段仪器被占用")
 		}
 	}
-	return false
+	if selfCnt >= rule.MaxContinuous {
+		return errors.New(fmt.Sprintf("超过连续最大预约次数: %d", rule.MaxContinuous))
+	}
+	return nil
 }
 
 func (s *Service) BookingJob() {

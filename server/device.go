@@ -6,6 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) DeviceType(c *gin.Context) {
+	code.Succ(c, s.Service.DeviceType(c))
+}
+
 func (s *Server) DeviceList(c *gin.Context) {
 	p := &req.ListReq{}
 	if err := c.BindQuery(p); err != nil {

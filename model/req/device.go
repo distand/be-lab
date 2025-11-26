@@ -37,7 +37,7 @@ func (d *DeviceSave) BuildDo(res *do.Device) *do.Device {
 	if d.Memo != "" {
 		res.Memo = d.Memo
 	}
-	if d.Status >= 0 {
+	if d.Status > 0 {
 		res.Status = d.Status
 	}
 	if d.Rule != nil {
