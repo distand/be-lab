@@ -12,9 +12,9 @@ type Device struct {
 }
 
 type DeviceRule struct {
-	MaxOnce int64 `json:"max_once,omitempty"`
-	MaxDay  int64 `json:"max_day,omitempty"`
-	MaxWeek int64 `json:"max_week,omitempty"`
+	MaxOnce       int64    `json:"max_once,omitempty"`
+	MaxContinuous int64    `json:"max_continuous,omitempty"`
+	RequireFields []string `json:"require_fields,omitempty"`
 }
 
 type DeviceCfg struct {

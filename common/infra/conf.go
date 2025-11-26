@@ -28,7 +28,7 @@ type Mysql struct {
 func NewCfg() {
 	Cfg = &Config{
 		Server: &Server{
-			Host: utils.EnvDefault("SERVER_HOST", "127.0.0.1"),
+			Host: utils.EnvDefault("SERVER_HOST", "0.0.0.0"),
 			Port: utils.EnvDefault("SERVER_PORT", "8000"),
 		},
 		Mysql: &Mysql{
