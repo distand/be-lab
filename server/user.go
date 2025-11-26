@@ -6,11 +6,16 @@ import (
 	"be-lab/common/utils"
 	"be-lab/model/req"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 func (s *Server) Login(c *gin.Context) {
-	openid := c.Query("openid")
+	fmt.Println("header", c.Request.Header)
+	openid := c.GetHeader("X-WX-OPENID")
+	if c.Query(common.KeyOpenid) != "" {
+		openid = c.Query(common.KeyOpenid)
+	}
 	if len(openid) < 16 {
 		code.Fail(c, errors.New(code.ParamErr))
 		return
