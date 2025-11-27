@@ -31,6 +31,7 @@ func (m *Booking) ToVO(nickname, deviceName string) *vo.Booking {
 		Nickname:   nickname,
 		DeviceID:   m.DeviceID,
 		DeviceName: deviceName,
+		Status:     m.Status,
 		Ext:        ext,
 		Stime:      m.Stime.Unix(),
 		Etime:      m.Etime.Unix(),

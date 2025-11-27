@@ -21,8 +21,9 @@ func SetupRouter(s *server.Server) *gin.Engine {
 	u.POST("/save", s.UserSave) // 保存用户
 	// 仪器相关
 	d := a.Group("/device")
-	d.GET("/type", s.DeviceType) // 仪器类型列表
-	d.GET("/list", s.DeviceList) // 仪器列表
+	d.GET("/fields", s.DeviceFields) // 仪器字段
+	d.GET("/type", s.DeviceType)     // 仪器类型列表
+	d.GET("/list", s.DeviceList)     // 仪器列表
 	// 预约相关
 	b := a.Group("/booking")
 	b.GET("/list", s.BookingList)  //	预约列表

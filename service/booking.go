@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"slices"
 	"time"
 )
 
@@ -72,7 +71,7 @@ func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
 		return errors.New("超过单次最大时间限制")
 	}
 	for _, field := range rule.RequireFields {
-		if !slices.Contains(common.BookingFields, field) {
+		if _, ok := common.DeviceFields[field]; !ok {
 			return errors.New("不支持的参数：" + field)
 		}
 		if v, ok := p.Ext[field]; !ok || v == "" {

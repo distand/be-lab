@@ -1,6 +1,7 @@
 package server
 
 import (
+	"be-lab/common"
 	"be-lab/common/code"
 	"be-lab/model/req"
 	"github.com/gin-gonic/gin"
@@ -8,6 +9,10 @@ import (
 
 func (s *Server) DeviceType(c *gin.Context) {
 	code.Succ(c, s.Service.DeviceType(c))
+}
+
+func (s *Server) DeviceFields(c *gin.Context) {
+	code.Succ(c, common.DeviceFields)
 }
 
 func (s *Server) DeviceList(c *gin.Context) {
