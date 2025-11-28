@@ -24,6 +24,7 @@ func (p *Page) Limit() int {
 
 type ListReq struct {
 	Page
+	ID       int32 `form:"id"`
 	Status   int32 `form:"status"`
 	Type     int32 `form:"type"`
 	Uid      int32 `form:"uid"`
