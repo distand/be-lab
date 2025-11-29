@@ -26,6 +26,7 @@ func (m *User) ToVO() *vo.User {
 		Openid:   m.Openid,
 		Nickname: m.Nickname,
 		Role:     m.Role,
+		Status:   m.Status,
 		Ltime:    m.Ltime.Unix(),
 		Ctime:    m.Ctime.Unix(),
 	}
