@@ -53,6 +53,10 @@ func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
 		if (!utils.IsAdmin(c) && d.Uid != utils.Uid(c)) || d.Status == common.StatusInactive {
 			return errors.New(code.Forbidden)
 		}
+		if p.IsDel > 0 && d.Status == common.StatusUsing {
+			// 取消使用中的预约要释放对应的仪器
+			_ = s.Dal.DeviceSave(c, &do.Device{ID: d.DeviceID, Status: common.StatusActive})
+		}
 		return s.Dal.BookingSave(c, p.BuildDo(utils.Uid(c), d))
 	}
 	return s.Dal.BookingAdd(c, p.BuildDo(utils.Uid(c), nil))
