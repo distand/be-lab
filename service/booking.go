@@ -50,7 +50,7 @@ func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
 			return err
 		}
 		//非本人或者已取消的预约不能修改
-		if d.Uid != utils.Uid(c) || d.Status == common.StatusInactive {
+		if (!utils.IsAdmin(c) && d.Uid != utils.Uid(c)) || d.Status == common.StatusInactive {
 			return errors.New(code.Forbidden)
 		}
 		return s.Dal.BookingSave(c, p.BuildDo(utils.Uid(c), d))
@@ -59,6 +59,9 @@ func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
 }
 
 func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
+	if p.ID > 0 && p.IsDel > 1 {
+		return nil
+	}
 	if p.Stime >= p.Etime || p.DeviceID == 0 || p.Stime < time.Now().Unix() {
 		return errors.New(code.ParamErr)
 	}
