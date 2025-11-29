@@ -59,7 +59,7 @@ func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
 }
 
 func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
-	if p.ID > 0 && p.IsDel > 1 {
+	if p.ID > 0 && p.IsDel == 1 {
 		return nil
 	}
 	if p.Stime >= p.Etime || p.DeviceID == 0 || p.Stime < time.Now().Unix() {
