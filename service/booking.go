@@ -10,8 +10,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (s *Service) BookingList(c *gin.Context, p *req.ListReq) *vo.Page {
@@ -41,6 +43,10 @@ func (s *Service) BookingList(c *gin.Context, p *req.ListReq) *vo.Page {
 }
 
 func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
+	uid := utils.Uid(c)
+	if strings.Contains(s.nickname(uid), "新用户") {
+		return errors.New("请先将昵称修改为姓名后再提交预约")
+	}
 	if err := s.checkBooking(c, p); err != nil {
 		return err
 	}
@@ -50,16 +56,16 @@ func (s *Service) BookingSave(c *gin.Context, p *req.BookingSave) error {
 			return err
 		}
 		//非本人或者已取消的预约不能修改
-		if (!utils.IsAdmin(c) && d.Uid != utils.Uid(c)) || d.Status == common.StatusInactive {
+		if (!utils.IsAdmin(c) && d.Uid != uid) || d.Status == common.StatusInactive {
 			return errors.New(code.Forbidden)
 		}
 		if p.IsDel > 0 && d.Status == common.StatusUsing {
 			// 取消使用中的预约要释放对应的仪器
 			_ = s.Dal.DeviceSave(c, &do.Device{ID: d.DeviceID, Status: common.StatusActive})
 		}
-		return s.Dal.BookingSave(c, p.BuildDo(utils.Uid(c), d))
+		return s.Dal.BookingSave(c, p.BuildDo(uid, d))
 	}
-	return s.Dal.BookingAdd(c, p.BuildDo(utils.Uid(c), nil))
+	return s.Dal.BookingAdd(c, p.BuildDo(uid, nil))
 }
 
 func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
