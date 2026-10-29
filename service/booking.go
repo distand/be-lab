@@ -83,7 +83,7 @@ func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
 	}
 	rule := device.ToVO().Rule
 	if rule.PreTime > 0 && p.Etime-now > rule.PreTime {
-		return fmt.Errorf("最早可提前%d天预约", rule.PreTime/86400)
+		return fmt.Errorf("最早可提前%d天预约", rule.PreTime/86400-1)
 	}
 	crossNight, err := checkCrossNight(rule.CrossNight, p.Stime, p.Etime)
 	if err != nil {
