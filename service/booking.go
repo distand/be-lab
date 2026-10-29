@@ -121,7 +121,7 @@ func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
 		}
 	}
 	if selfCnt >= rule.MaxContinuous {
-		return errors.New(fmt.Sprintf("超过连续最大预约次数: %d", rule.MaxContinuous))
+		return errors.New(fmt.Sprintf("超过连续最大预约次数: %d次", rule.MaxContinuous))
 	}
 	return nil
 }
