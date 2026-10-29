@@ -12,6 +12,8 @@ type Device struct {
 }
 
 type DeviceRule struct {
+	CrossNight    string   `json:"cross_night,omitempty"`
+	PreTime       int64    `json:"pre_time,omitempty"`
 	MaxOnce       int64    `json:"max_once,omitempty"`
 	MaxContinuous int64    `json:"max_continuous,omitempty"`
 	RequireFields []string `json:"require_fields,omitempty"`

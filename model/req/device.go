@@ -46,7 +46,7 @@ func (d *DeviceSave) BuildDo(res *do.Device) *do.Device {
 	}
 	if d.Config != nil {
 		cfg, _ := json.Marshal(d.Config)
-		res.Rule = string(cfg)
+		res.Config = string(cfg)
 	}
 	return res
 }

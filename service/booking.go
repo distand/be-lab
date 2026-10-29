@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,7 +73,8 @@ func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
 	if p.ID > 0 && p.IsDel == 1 {
 		return nil
 	}
-	if p.Stime >= p.Etime || p.DeviceID == 0 || p.Stime < time.Now().Unix() {
+	now := time.Now().Unix()
+	if p.Stime >= p.Etime || p.DeviceID == 0 || p.Stime < now {
 		return errors.New(code.ParamErr)
 	}
 	device, err := s.Dal.Device(c, p.DeviceID)
@@ -80,7 +82,14 @@ func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
 		return errors.New("仪器不可用")
 	}
 	rule := device.ToVO().Rule
-	if rule.MaxOnce > 0 && p.Etime-p.Stime > rule.MaxOnce {
+	if rule.PreTime > 0 && p.Etime-now > rule.PreTime {
+		return fmt.Errorf("最早可提前%d天预约", rule.PreTime/86400)
+	}
+	crossNight, err := checkCrossNight(rule.CrossNight, p.Stime, p.Etime)
+	if err != nil {
+		return err
+	}
+	if !crossNight && rule.MaxOnce > 0 && p.Etime-p.Stime > rule.MaxOnce {
 		return errors.New("超过单次最大时间限制")
 	}
 	for _, field := range rule.RequireFields {
@@ -115,6 +124,33 @@ func (s *Service) checkBooking(c *gin.Context, p *req.BookingSave) error {
 		return errors.New(fmt.Sprintf("超过连续最大预约次数: %d", rule.MaxContinuous))
 	}
 	return nil
+}
+
+func checkCrossNight(rule string, stime, etime int64) (bool, error) {
+	if rule == "" {
+		return false, nil
+	}
+	hours := strings.Split(rule, "-")
+	if len(hours) != 2 {
+		return false, errors.New("过夜时间配置错误")
+	}
+	startHour, startErr := strconv.Atoi(hours[0])
+	endHour, endErr := strconv.Atoi(hours[1])
+	if startErr != nil || endErr != nil || startHour > 23 || endHour < 0 || startHour <= endHour {
+		return false, errors.New("过夜时间配置错误")
+	}
+	start, end := time.Unix(stime, 0), time.Unix(etime, 0)
+	year, month, day := start.Date()
+	nightStart := time.Date(year, month, day, startHour, 0, 0, 0, start.Location())
+	nightEnd := time.Date(year, month, day+1, endHour, 0, 0, 0, start.Location())
+	if start.Equal(nightStart) && end.Equal(nightEnd) {
+		return true, nil
+	}
+	dayStart := time.Date(year, month, day, endHour, 0, 0, 0, start.Location())
+	if start.Before(dayStart) || end.After(nightStart) {
+		return false, fmt.Errorf("如需过夜请约%s点，如约白天请错开过夜时间", rule)
+	}
+	return false, nil
 }
 
 func (s *Service) BookingJob() {
